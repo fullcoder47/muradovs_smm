@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Muradovs_.smm
 
-## Getting Started
+Premium SMM agentligi uchun Next.js App Router, TypeScript, Tailwind CSS, Prisma, PostgreSQL va NextAuth asosidagi public website + admin panel.
 
-First, run the development server:
+## Texnologiyalar
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL
+- NextAuth credentials login
+- Zod validation
+- React Hook Form
+- Image upload: `public/uploads`
+- Dynamic metadata, `sitemap.xml`, `robots.txt`
+
+## Ishga tushirish
+
+1. Dependencylarni o'rnating:
+
+```bash
+npm install
+```
+
+2. `.env.example` faylidan `.env` yarating va qiymatlarni to'ldiring:
+
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?schema=public"
+NEXTAUTH_SECRET="long-random-secret"
+NEXTAUTH_URL="http://localhost:3000"
+ADMIN_EMAIL="admin@muradovs.uz"
+ADMIN_PASSWORD="strong-password"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+```
+
+3. Prisma client va migratsiya:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+4. Boshlang'ich kontent va admin user yaratish:
+
+```bash
+npm run db:seed
+```
+
+5. Development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Public sayt: `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Admin panel: `http://localhost:3000/admin`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Admin imkoniyatlari
 
-## Learn More
+- Secure login/logout
+- Dashboard statistikalar
+- Lead status boshqaruvi
+- Services CRUD
+- Portfolio CRUD
+- Pricing CRUD
+- Blog CRUD
+- Testimonials CRUD
+- FAQ CRUD
+- Site Settings CRUD
+- Image upload
 
-To learn more about Next.js, take a look at the following resources:
+## Vercel deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Loyihani GitHub'ga push qiling.
+2. Vercel'da yangi project import qiling.
+3. PostgreSQL database yarating yoki mavjud `DATABASE_URL` ni ulang.
+4. Environment variables qo'shing:
+   - `DATABASE_URL`
+   - `NEXTAUTH_SECRET`
+   - `NEXTAUTH_URL`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD`
+   - `NEXT_PUBLIC_SITE_URL`
+5. Build command: `npm run build`
+6. Deploydan keyin production migratsiya:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run db:deploy
+npm run db:seed
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Eslatma: Vercel serverless filesystem doimiy saqlash uchun mos emas. Production image upload uchun Vercel Blob, S3 yoki Cloudinary ulash tavsiya qilinadi. Hozirgi local upload development va oddiy VPS deployment uchun tayyor.
