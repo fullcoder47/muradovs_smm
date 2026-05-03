@@ -5,11 +5,11 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const [leads, services, portfolio, pricing, posts] = await Promise.all([
-    prisma.lead.count(),
-    prisma.service.count(),
-    prisma.portfolio.count(),
-    prisma.pricingPackage.count(),
-    prisma.blogPost.count(),
+    prisma.lead.count().catch(() => 0),
+    prisma.service.count().catch(() => 0),
+    prisma.portfolio.count().catch(() => 0),
+    prisma.pricingPackage.count().catch(() => 0),
+    prisma.blogPost.count().catch(() => 0),
   ]);
 
   const cards = [
@@ -20,7 +20,7 @@ export default async function AdminDashboard() {
     ["Blog posts", posts, Newspaper],
   ] as const;
 
-  const latestLeads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" }, take: 5 });
+  const latestLeads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" }, take: 5 }).catch(() => []);
 
   return (
     <div>

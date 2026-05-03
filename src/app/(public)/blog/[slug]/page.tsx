@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Section } from "@/components/public/section";
-import { prisma } from "@/lib/prisma";
+import { getBlogPostBySlug } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await prisma.blogPost.findUnique({ where: { slug } });
+  const post = await getBlogPostBySlug(slug);
   if (!post) return { title: "Blog" };
   return {
     title: post.title,
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = await prisma.blogPost.findUnique({ where: { slug } });
+  const post = await getBlogPostBySlug(slug);
   if (!post || !post.isPublished) notFound();
 
   return (

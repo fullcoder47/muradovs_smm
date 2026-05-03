@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Section } from "@/components/public/section";
-import { prisma } from "@/lib/prisma";
+import { getBlogPosts } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const posts = await prisma.blogPost.findMany({ where: { isPublished: true }, orderBy: { publishedAt: "desc" } });
+  const posts = await getBlogPosts();
 
   return (
     <Section eyebrow="Blog" title="SMM growth haqida amaliy fikrlar">

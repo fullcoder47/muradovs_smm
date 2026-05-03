@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Section } from "@/components/public/section";
-import { prisma } from "@/lib/prisma";
+import { getPortfolioBySlug } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const item = await prisma.portfolio.findUnique({ where: { slug } });
+  const item = await getPortfolioBySlug(slug);
   if (!item) return { title: "Case study" };
   return { title: item.title, description: item.summary };
 }
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const item = await prisma.portfolio.findUnique({ where: { slug } });
+  const item = await getPortfolioBySlug(slug);
   if (!item || !item.isActive) notFound();
 
   return (

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PortfolioCard } from "@/components/public/cards";
 import { Section } from "@/components/public/section";
-import { prisma } from "@/lib/prisma";
+import { getPortfolioItems } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PortfolioPage() {
-  const items = await prisma.portfolio.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } });
+  const items = await getPortfolioItems();
 
   return (
     <Section eyebrow="Portfolio" title="Case studies" description="Biz ishlagan loyihalarda chiroyli dizayn bilan birga aniq biznes ko'rsatkichlariga e'tibor beramiz.">

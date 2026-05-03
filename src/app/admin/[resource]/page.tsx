@@ -29,7 +29,7 @@ export default async function ResourceListPage({ params }: { params: Promise<{ r
   if (!isResource(rawResource)) notFound();
   const resource = rawResource;
   const config = resources[resource];
-  const items = await getDelegate(resource).findMany({ orderBy: { createdAt: "desc" } });
+  const items = await getDelegate(resource).findMany({ orderBy: { createdAt: "desc" } }).catch(() => []);
 
   return (
     <div>

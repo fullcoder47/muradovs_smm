@@ -30,10 +30,17 @@ export async function saveResource(resource: ResourceKey, id: string | undefined
   const data = config.transform(parsed.data as Record<string, unknown>);
   const delegate = delegateFor(resource);
 
-  if (id) {
-    await delegate.update({ where: { id }, data });
-  } else {
-    await delegate.create({ data });
+  try {
+    if (id) {
+      await delegate.update({ where: { id }, data });
+    } else {
+      await delegate.create({ data });
+    }
+  } catch {
+    return {
+      ok: false,
+      message: "DATABASE_URL haqiqiy PostgreSQLga ulanmagan. DB ulangandan keyin saqlash ishlaydi.",
+    };
   }
 
   revalidatePath(`/admin/${resource}`);
@@ -42,12 +49,20 @@ export async function saveResource(resource: ResourceKey, id: string | undefined
 }
 
 export async function deleteResource(resource: ResourceKey, id: string) {
-  await delegateFor(resource).delete({ where: { id } });
+  try {
+    await delegateFor(resource).delete({ where: { id } });
+  } catch {
+    return;
+  }
   revalidatePath(`/admin/${resource}`);
   revalidatePath("/");
 }
 
 export async function updateLeadStatus(id: string, status: "NEW" | "CONTACTED" | "IN_PROGRESS" | "CLOSED") {
-  await prisma.lead.update({ where: { id }, data: { status } });
+  try {
+    await prisma.lead.update({ where: { id }, data: { status } });
+  } catch {
+    return;
+  }
   revalidatePath("/admin/leads");
 }

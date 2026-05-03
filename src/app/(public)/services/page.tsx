@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ServiceCard } from "@/components/public/cards";
 import { LeadForm } from "@/components/public/lead-form";
 import { Section } from "@/components/public/section";
-import { prisma } from "@/lib/prisma";
+import { getServices } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const services = await prisma.service.findMany({ where: { isActive: true }, orderBy: { order: "asc" } });
+  const services = await getServices();
 
   return (
     <>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PricingCard } from "@/components/public/cards";
 import { Section } from "@/components/public/section";
-import { prisma } from "@/lib/prisma";
+import { getPricingPackages } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const packages = await prisma.pricingPackage.findMany({ where: { isActive: true }, orderBy: { order: "asc" } });
+  const packages = await getPricingPackages();
 
   return (
     <Section eyebrow="Narxlar" title="O'sish bosqichingizga mos paket tanlang" description="Har bir paket oyma-oy tahlil, reporting va strategik optimizatsiya bilan yuritiladi.">
