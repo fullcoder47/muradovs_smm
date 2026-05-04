@@ -1,11 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getToken } from "next-auth/jwt";
 import { put } from "@vercel/blob";
-import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const allowedExtensions = new Set([
   ".jpg",
@@ -43,9 +44,9 @@ function contentTypeFor(ext: string, fallback: string) {
   return map[ext] ?? "application/octet-stream";
 }
 
-export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+export async function POST(request: NextRequest) {
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -63,8 +64,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Faqat rasm yuklash mumkin" }, { status: 400 });
   }
 
-  if (file.size > 20 * 1024 * 1024) {
-    return NextResponse.json({ error: "Rasm 20MB dan kichik bo'lishi kerak" }, { status: 400 });
+  if (file.size > 8 * 1024 * 1024) {
+    return NextResponse.json({ error: "Rasm 8MB dan kichik bo'lishi kerak" }, { status: 400 });
   }
 
   const bytes = Buffer.from(await file.arrayBuffer());
@@ -73,13 +74,21 @@ export async function POST(request: Request) {
   const contentType = contentTypeFor(safeExt, file.type);
 
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`muradovs-smm/${fileName}`, bytes, {
-      access: "public",
-      contentType,
-      addRandomSuffix: true,
-    });
+    try {
+      const blob = await put(`muradovs-smm/${fileName}`, bytes, {
+        access: "public",
+        contentType,
+        addRandomSuffix: true,
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
 
-    return NextResponse.json({ url: blob.url });
+      return NextResponse.json({ url: blob.url });
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Vercel Blob upload xatosi" },
+        { status: 500 },
+      );
+    }
   }
 
   if (process.env.NODE_ENV === "production") {

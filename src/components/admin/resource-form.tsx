@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { CheckCircle2, ImageIcon, Loader2, Upload } from "lucide-react";
 import { motion } from "framer-motion";
-import { upload as uploadBlob } from "@vercel/blob/client";
 import { saveResource } from "@/app/admin/actions";
 import { type ClientResourceConfig, type ResourceKey } from "@/lib/admin-config";
 
@@ -60,24 +59,20 @@ function timeout<T>(promise: Promise<T>, ms: number, message: string) {
 async function uploadViaServer(file: File) {
   const form = new FormData();
   form.append("file", file);
-  const response = await timeout(fetch("/api/upload", { method: "POST", body: form }), 45000, "Server upload juda uzoq davom etdi");
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 45000);
+
+  const response = await timeout(
+    fetch("/api/upload", { method: "POST", body: form, signal: controller.signal }),
+    46000,
+    "Upload juda uzoq davom etdi. Rasm hajmini kichraytirib qayta urinib ko'ring.",
+  ).finally(() => window.clearTimeout(timer));
+
   const data = await response.json();
   if (!response.ok || !data.url) {
     throw new Error(data.error ?? "Server upload amalga oshmadi");
   }
   return data.url as string;
-}
-
-async function uploadViaClientBlob(file: File) {
-  const blob = await timeout(
-    uploadBlob(`muradovs-smm/${file.name}`, file, {
-      access: "public",
-      handleUploadUrl: "/api/upload/blob",
-    }),
-    90000,
-    "Blob upload juda uzoq davom etdi",
-  );
-  return blob.url;
 }
 
 export function ResourceForm({
@@ -118,20 +113,7 @@ export function ResourceForm({
     try {
       const normalizedFile = imageTypeFromName(file);
       setUploadError("Rasm yuklanmoqda...");
-
-      try {
-        const url = await uploadViaServer(normalizedFile);
-        setValue(fieldName, url, { shouldDirty: true, shouldValidate: true });
-        setImagePreviews((current) => ({ ...current, [fieldName]: url }));
-        setUploadError("Rasm muvaffaqiyatli yuklandi.");
-        return;
-      } catch (serverError) {
-        setUploadError(
-          `${serverError instanceof Error ? serverError.message : "Server upload ishlamadi"}. To'g'ridan-to'g'ri Blob upload sinab ko'rilmoqda...`,
-        );
-      }
-
-      const url = await uploadViaClientBlob(normalizedFile);
+      const url = await uploadViaServer(normalizedFile);
       setValue(fieldName, url, { shouldDirty: true, shouldValidate: true });
       setImagePreviews((current) => ({ ...current, [fieldName]: url }));
       setUploadError("Rasm muvaffaqiyatli yuklandi.");
