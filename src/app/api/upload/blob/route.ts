@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -21,7 +21,7 @@ const allowedContentTypes = [
   "image/x-icon",
 ];
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json(
       { error: "Vercel Blob sozlanmagan. BLOB_READ_WRITE_TOKEN env kerak." },
@@ -36,8 +36,8 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async () => {
-        const session = await getServerSession(authOptions);
-        if (!session) {
+        const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+        if (!token) {
           throw new Error("Unauthorized");
         }
 

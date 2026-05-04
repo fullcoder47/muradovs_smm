@@ -42,6 +42,44 @@ function imageTypeFromName(file: File) {
   return type ? new File([file], file.name, { type }) : file;
 }
 
+function timeout<T>(promise: Promise<T>, ms: number, message: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(message)), ms);
+    promise
+      .then((value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
+
+async function uploadViaServer(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await timeout(fetch("/api/upload", { method: "POST", body: form }), 45000, "Server upload juda uzoq davom etdi");
+  const data = await response.json();
+  if (!response.ok || !data.url) {
+    throw new Error(data.error ?? "Server upload amalga oshmadi");
+  }
+  return data.url as string;
+}
+
+async function uploadViaClientBlob(file: File) {
+  const blob = await timeout(
+    uploadBlob(`muradovs-smm/${file.name}`, file, {
+      access: "public",
+      handleUploadUrl: "/api/upload/blob",
+    }),
+    90000,
+    "Blob upload juda uzoq davom etdi",
+  );
+  return blob.url;
+}
+
 export function ResourceForm({
   resource,
   config,
@@ -79,27 +117,24 @@ export function ResourceForm({
     setUploadingField(fieldName);
     try {
       const normalizedFile = imageTypeFromName(file);
-      let url = "";
+      setUploadError("Rasm yuklanmoqda...");
 
       try {
-        const blob = await uploadBlob(`muradovs-smm/${normalizedFile.name}`, normalizedFile, {
-          access: "public",
-          handleUploadUrl: "/api/upload/blob",
-        });
-        url = blob.url;
-      } catch {
-        const form = new FormData();
-        form.append("file", normalizedFile);
-        const response = await fetch("/api/upload", { method: "POST", body: form });
-        const data = await response.json();
-        if (!response.ok || !data.url) {
-          throw new Error(data.error ?? "Upload amalga oshmadi");
-        }
-        url = data.url;
+        const url = await uploadViaServer(normalizedFile);
+        setValue(fieldName, url, { shouldDirty: true, shouldValidate: true });
+        setImagePreviews((current) => ({ ...current, [fieldName]: url }));
+        setUploadError("Rasm muvaffaqiyatli yuklandi.");
+        return;
+      } catch (serverError) {
+        setUploadError(
+          `${serverError instanceof Error ? serverError.message : "Server upload ishlamadi"}. To'g'ridan-to'g'ri Blob upload sinab ko'rilmoqda...`,
+        );
       }
 
+      const url = await uploadViaClientBlob(normalizedFile);
       setValue(fieldName, url, { shouldDirty: true, shouldValidate: true });
       setImagePreviews((current) => ({ ...current, [fieldName]: url }));
+      setUploadError("Rasm muvaffaqiyatli yuklandi.");
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "Upload amalga oshmadi");
     } finally {
@@ -190,7 +225,11 @@ export function ResourceForm({
                   <ImageIcon size={22} />
                 </div>
               )}
-              {uploadError && <p className="text-sm text-red-300">{uploadError}</p>}
+              {uploadError && (
+                <p className={`text-sm ${uploadError.includes("muvaffaqiyatli") ? "text-emerald-300" : uploadError.includes("yuklanmoqda") || uploadError.includes("sinab") ? "text-blue-300" : "text-red-300"}`}>
+                  {uploadError}
+                </p>
+              )}
             </motion.div>
           );
         }
