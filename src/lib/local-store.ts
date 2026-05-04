@@ -7,7 +7,12 @@ type Store = Partial<Record<ResourceKey | "leads", StoreRecord[]>>;
 
 const storePath = path.join(process.cwd(), ".data", "admin-store.json");
 
+export function localStoreEnabled() {
+  return process.env.NODE_ENV !== "production";
+}
+
 async function readStore(): Promise<Store> {
+  if (!localStoreEnabled()) return {};
   try {
     return JSON.parse(await readFile(storePath, "utf8")) as Store;
   } catch {
@@ -16,6 +21,7 @@ async function readStore(): Promise<Store> {
 }
 
 async function writeStore(store: Store) {
+  if (!localStoreEnabled()) return;
   await mkdir(path.dirname(storePath), { recursive: true });
   await writeFile(storePath, JSON.stringify(store, null, 2), "utf8");
 }

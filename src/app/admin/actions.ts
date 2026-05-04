@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { resources, type ResourceKey } from "@/lib/admin-config";
-import { deleteLocalRecord, saveLocalRecord } from "@/lib/local-store";
+import { deleteLocalRecord, localStoreEnabled, saveLocalRecord } from "@/lib/local-store";
 
 function delegateFor(resource: ResourceKey) {
   return prisma[resources[resource].delegate as keyof typeof prisma] as unknown as {
@@ -38,13 +38,17 @@ export async function saveResource(resource: ResourceKey, id: string | undefined
       await delegate.create({ data });
     }
   } catch {
-    await saveLocalRecord(resource, id, data);
-    revalidatePath(`/admin/${resource}`);
-    revalidatePath("/");
-    return {
-      ok: true,
-      message: "Local demo storagega saqlandi. PostgreSQL ulanganda Prisma orqali saqlanadi.",
-    };
+    if (localStoreEnabled()) {
+      await saveLocalRecord(resource, id, data);
+      revalidatePath(`/admin/${resource}`);
+      revalidatePath("/");
+      return {
+        ok: true,
+        message: "Local demo storagega saqlandi. PostgreSQL ulanganda Prisma orqali saqlanadi.",
+      };
+    }
+
+    return { ok: false, message: "Databasega ulanishda xatolik. DATABASE_URL va migrationlarni tekshiring." };
   }
 
   revalidatePath(`/admin/${resource}`);
@@ -56,9 +60,11 @@ export async function deleteResource(resource: ResourceKey, id: string) {
   try {
     await delegateFor(resource).delete({ where: { id } });
   } catch {
-    await deleteLocalRecord(resource, id);
-    revalidatePath(`/admin/${resource}`);
-    revalidatePath("/");
+    if (localStoreEnabled()) {
+      await deleteLocalRecord(resource, id);
+      revalidatePath(`/admin/${resource}`);
+      revalidatePath("/");
+    }
     return;
   }
   revalidatePath(`/admin/${resource}`);

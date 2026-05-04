@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { saveLocalLead } from "@/lib/local-store";
+import { localStoreEnabled, saveLocalLead } from "@/lib/local-store";
 import { leadSchema } from "@/lib/validations";
 
 export async function createLead(_: { ok: boolean; message: string }, formData: FormData) {
@@ -16,6 +16,10 @@ export async function createLead(_: { ok: boolean; message: string }, formData: 
     await prisma.lead.create({ data: parsed.data });
     revalidatePath("/admin/leads");
   } catch {
+    if (!localStoreEnabled()) {
+      return { ok: false, message: "Databasega ulanishda xatolik. Iltimos keyinroq urinib ko'ring." };
+    }
+
     await saveLocalLead(parsed.data);
     return {
       ok: true,
