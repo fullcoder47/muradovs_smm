@@ -7,6 +7,8 @@ import {
   demoServices,
   demoTestimonials,
 } from "@/lib/demo-data";
+import type { Locale } from "@/lib/i18n";
+import { translateList, translateText } from "@/lib/i18n";
 import { listLocalRecords } from "@/lib/local-store";
 
 function withFallback<T>(items: T[], fallback: T[]) {
@@ -47,6 +49,67 @@ export async function getHomeData() {
       faqs: withFallback(faqs, demoFaqs),
     };
   }
+}
+
+export async function localizeService<T extends { title: string; description: string; features: string[] }>(service: T, locale: Locale) {
+  if (locale === "uz") return service;
+  return {
+    ...service,
+    title: await translateText(service.title, locale),
+    description: await translateText(service.description, locale),
+    features: await translateList(service.features, locale),
+  };
+}
+
+export async function localizePortfolio<T extends { title: string; summary: string; results: string[]; challenge?: string | null; solution?: string | null }>(item: T, locale: Locale) {
+  if (locale === "uz") return item;
+  return {
+    ...item,
+    title: await translateText(item.title, locale),
+    summary: await translateText(item.summary, locale),
+    challenge: await translateText(item.challenge, locale),
+    solution: await translateText(item.solution, locale),
+    results: await translateList(item.results, locale),
+  };
+}
+
+export async function localizePricing<T extends { name: string; description: string; features: string[] }>(item: T, locale: Locale) {
+  if (locale === "uz") return item;
+  return {
+    ...item,
+    name: await translateText(item.name, locale),
+    description: await translateText(item.description, locale),
+    features: await translateList(item.features, locale),
+  };
+}
+
+export async function localizePost<T extends { title: string; excerpt: string; content: string; tags: string[] }>(post: T, locale: Locale) {
+  if (locale === "uz") return post;
+  return {
+    ...post,
+    title: await translateText(post.title, locale),
+    excerpt: await translateText(post.excerpt, locale),
+    content: await translateText(post.content, locale),
+    tags: await translateList(post.tags, locale),
+  };
+}
+
+export async function localizeTestimonial<T extends { role: string; content: string }>(item: T, locale: Locale) {
+  if (locale === "uz") return item;
+  return {
+    ...item,
+    role: await translateText(item.role, locale),
+    content: await translateText(item.content, locale),
+  };
+}
+
+export async function localizeFaq<T extends { question: string; answer: string }>(faq: T, locale: Locale) {
+  if (locale === "uz") return faq;
+  return {
+    ...faq,
+    question: await translateText(faq.question, locale),
+    answer: await translateText(faq.answer, locale),
+  };
 }
 
 export async function getServices() {

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Section } from "@/components/public/section";
-import { getPortfolioBySlug } from "@/lib/public-data";
+import { getLocale } from "@/lib/i18n-server";
+import { getPortfolioBySlug, localizePortfolio } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const item = await getPortfolioBySlug(slug);
+  const locale = await getLocale();
+  const sourceItem = await getPortfolioBySlug(slug);
+  const item = sourceItem ? await localizePortfolio(sourceItem, locale) : null;
   if (!item || !item.isActive) notFound();
 
   return (

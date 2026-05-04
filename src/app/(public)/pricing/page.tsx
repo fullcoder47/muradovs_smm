@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { PricingCard } from "@/components/public/cards";
 import { Section } from "@/components/public/section";
-import { getPricingPackages } from "@/lib/public-data";
+import { t } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
+import { getPricingPackages, localizePricing } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +13,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const packages = await getPricingPackages();
+  const locale = await getLocale();
+  const packages = await Promise.all((await getPricingPackages()).map((item) => localizePricing(item, locale)));
 
   return (
-    <Section eyebrow="Narxlar" title="O'sish bosqichingizga mos paket tanlang" description="Har bir paket oyma-oy tahlil, reporting va strategik optimizatsiya bilan yuritiladi.">
+    <Section eyebrow={t(locale, "pricing")} title={t(locale, "pricingTitle")} description={t(locale, "benefitsTitle")}>
       <div className="grid gap-5 lg:grid-cols-3">
         {packages.map((item) => <PricingCard key={item.id} {...item} />)}
       </div>

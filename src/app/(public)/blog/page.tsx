@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Section } from "@/components/public/section";
-import { getBlogPosts } from "@/lib/public-data";
+import { t } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
+import { getBlogPosts, localizePost } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +14,11 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const posts = await getBlogPosts();
+  const locale = await getLocale();
+  const posts = await Promise.all((await getBlogPosts()).map((post) => localizePost(post, locale)));
 
   return (
-    <Section eyebrow="Blog" title="SMM growth haqida amaliy fikrlar">
+    <Section eyebrow={t(locale, "blog")} title="SMM growth">
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
           <Link key={post.id} href={`/blog/${post.slug}`} className="group rounded-lg border border-white/10 bg-white/[0.04] p-6 transition hover:border-blue-400/50">
