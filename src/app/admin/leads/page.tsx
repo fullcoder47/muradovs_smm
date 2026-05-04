@@ -1,10 +1,19 @@
 import { LeadStatusForm } from "@/components/admin/lead-status-form";
 import { prisma } from "@/lib/prisma";
+import { listLocalRecords } from "@/lib/local-store";
 
 export const dynamic = "force-dynamic";
 
+function formatDate(value: unknown) {
+  return new Date(String(value)).toLocaleDateString("uz-UZ");
+}
+
+function text(value: unknown) {
+  return String(value ?? "");
+}
+
 export default async function LeadsPage() {
-  const leads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } }).catch(() => []);
+  const leads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } }).catch(() => listLocalRecords("leads"));
 
   return (
     <div>
@@ -20,13 +29,13 @@ export default async function LeadsPage() {
           <tbody>
             {leads.map((lead) => (
               <tr key={lead.id} className="border-t border-white/10">
-                <td className="p-4 font-semibold">{lead.name}</td>
-                <td>{lead.phone}</td>
-                <td>{lead.telegram}</td>
-                <td>{lead.businessType}</td>
-                <td>{lead.serviceType}</td>
-                <td><LeadStatusForm id={lead.id} status={lead.status} /></td>
-                <td>{lead.createdAt.toLocaleDateString("uz-UZ")}</td>
+                <td className="p-4 font-semibold">{text(lead.name)}</td>
+                <td>{text(lead.phone)}</td>
+                <td>{text(lead.telegram)}</td>
+                <td>{text(lead.businessType)}</td>
+                <td>{text(lead.serviceType)}</td>
+                <td><LeadStatusForm id={text(lead.id)} status={text(lead.status)} /></td>
+                <td>{formatDate(lead.createdAt)}</td>
               </tr>
             ))}
             {leads.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-slate-500">Hali lead yo'q.</td></tr>}

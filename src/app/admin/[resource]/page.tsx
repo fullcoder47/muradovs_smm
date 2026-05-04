@@ -4,6 +4,7 @@ import { Edit3, Plus } from "lucide-react";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { prisma } from "@/lib/prisma";
 import { resources, type ResourceKey } from "@/lib/admin-config";
+import { listLocalRecords } from "@/lib/local-store";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function ResourceListPage({ params }: { params: Promise<{ r
   if (!isResource(rawResource)) notFound();
   const resource = rawResource;
   const config = resources[resource];
-  const items = await getDelegate(resource).findMany({ orderBy: { createdAt: "desc" } }).catch(() => []);
+  const items = await getDelegate(resource).findMany({ orderBy: { createdAt: "desc" } }).catch(() => listLocalRecords(resource));
 
   return (
     <div>

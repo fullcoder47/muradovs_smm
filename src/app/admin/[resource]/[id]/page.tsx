@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResourceForm } from "@/components/admin/resource-form";
 import { prisma } from "@/lib/prisma";
-import { resources, type ResourceKey } from "@/lib/admin-config";
+import { getClientResourceConfig, resources, type ResourceKey } from "@/lib/admin-config";
+import { findLocalRecord } from "@/lib/local-store";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +21,10 @@ export default async function EditResourcePage({ params }: { params: Promise<{ r
   const { resource: rawResource, id } = await params;
   if (!isResource(rawResource)) notFound();
 
-  const item = await getDelegate(rawResource).findUnique({ where: { id } });
+  const item = await getDelegate(rawResource).findUnique({ where: { id } }).catch(() => findLocalRecord(rawResource, id));
   if (!item) notFound();
 
-  const config = resources[rawResource];
+  const config = getClientResourceConfig(rawResource);
 
   return (
     <div className="max-w-3xl">

@@ -24,6 +24,8 @@ export type ResourceConfig = {
   transform: (data: Record<string, unknown>) => Record<string, unknown>;
 };
 
+export type ClientResourceConfig = Pick<ResourceConfig, "label" | "listTitle" | "fields" | "columns" | "defaults">;
+
 export const resources = {
   services: {
     label: "Xizmatlar",
@@ -209,3 +211,8 @@ export const resources = {
 } satisfies Record<string, ResourceConfig>;
 
 export type ResourceKey = keyof typeof resources;
+
+export function getClientResourceConfig(resource: ResourceKey): ClientResourceConfig {
+  const { label, listTitle, fields, columns, defaults } = resources[resource];
+  return { label, listTitle, fields, columns, defaults };
+}

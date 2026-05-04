@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResourceForm } from "@/components/admin/resource-form";
-import { resources, type ResourceKey } from "@/lib/admin-config";
+import { getClientResourceConfig, resources, type ResourceKey } from "@/lib/admin-config";
 
 function isResource(value: string): value is ResourceKey {
   return value in resources;
@@ -10,7 +10,7 @@ function isResource(value: string): value is ResourceKey {
 export default async function NewResourcePage({ params }: { params: Promise<{ resource: string }> }) {
   const { resource: rawResource } = await params;
   if (!isResource(rawResource)) notFound();
-  const config = resources[rawResource];
+  const config = getClientResourceConfig(rawResource);
 
   return (
     <div className="max-w-3xl">

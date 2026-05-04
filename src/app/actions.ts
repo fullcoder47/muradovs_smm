@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { saveLocalLead } from "@/lib/local-store";
 import { leadSchema } from "@/lib/validations";
 
 export async function createLead(_: { ok: boolean; message: string }, formData: FormData) {
@@ -15,10 +16,10 @@ export async function createLead(_: { ok: boolean; message: string }, formData: 
     await prisma.lead.create({ data: parsed.data });
     revalidatePath("/admin/leads");
   } catch {
+    await saveLocalLead(parsed.data);
     return {
       ok: true,
-      message:
-        "Demo rejim: ariza formasi ishladi, lekin DATABASE_URL hali haqiqiy PostgreSQLga ulanmagan. DB ulanganda ariza saqlanadi.",
+      message: "Ariza local demo storagega saqlandi. PostgreSQL ulanganda DBga yoziladi.",
     };
   }
 

@@ -1,15 +1,20 @@
 import { BarChart3, Briefcase, MessageSquare, Newspaper, Package, Tags } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { listLocalRecords } from "@/lib/local-store";
 
 export const dynamic = "force-dynamic";
 
+function text(value: unknown) {
+  return String(value ?? "");
+}
+
 export default async function AdminDashboard() {
   const [leads, services, portfolio, pricing, posts] = await Promise.all([
-    prisma.lead.count().catch(() => 0),
-    prisma.service.count().catch(() => 0),
-    prisma.portfolio.count().catch(() => 0),
-    prisma.pricingPackage.count().catch(() => 0),
-    prisma.blogPost.count().catch(() => 0),
+    prisma.lead.count().catch(async () => (await listLocalRecords("leads")).length),
+    prisma.service.count().catch(async () => (await listLocalRecords("services")).length),
+    prisma.portfolio.count().catch(async () => (await listLocalRecords("portfolio")).length),
+    prisma.pricingPackage.count().catch(async () => (await listLocalRecords("pricing")).length),
+    prisma.blogPost.count().catch(async () => (await listLocalRecords("blog")).length),
   ]);
 
   const cards = [
@@ -20,7 +25,9 @@ export default async function AdminDashboard() {
     ["Blog posts", posts, Newspaper],
   ] as const;
 
-  const latestLeads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" }, take: 5 }).catch(() => []);
+  const latestLeads = await prisma.lead
+    .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
+    .catch(async () => (await listLocalRecords("leads")).slice(0, 5));
 
   return (
     <div>
@@ -48,10 +55,10 @@ export default async function AdminDashboard() {
             <tbody>
               {latestLeads.map((lead) => (
                 <tr key={lead.id} className="border-t border-white/10">
-                  <td className="py-3">{lead.name}</td>
-                  <td>{lead.phone}</td>
-                  <td>{lead.serviceType}</td>
-                  <td>{lead.status}</td>
+                  <td className="py-3">{text(lead.name)}</td>
+                  <td>{text(lead.phone)}</td>
+                  <td>{text(lead.serviceType)}</td>
+                  <td>{text(lead.status)}</td>
                 </tr>
               ))}
             </tbody>

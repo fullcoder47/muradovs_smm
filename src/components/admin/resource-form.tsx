@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Upload } from "lucide-react";
 import { saveResource } from "@/app/admin/actions";
-import { type ResourceConfig, type ResourceKey } from "@/lib/admin-config";
+import { type ClientResourceConfig, type ResourceKey } from "@/lib/admin-config";
 
 type FormValues = Record<string, string | number | boolean>;
 
@@ -22,7 +22,7 @@ export function ResourceForm({
   item,
 }: {
   resource: ResourceKey;
-  config: ResourceConfig;
+  config: ClientResourceConfig;
   item?: Record<string, unknown>;
 }) {
   const router = useRouter();

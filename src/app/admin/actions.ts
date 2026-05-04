@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { resources, type ResourceKey } from "@/lib/admin-config";
+import { deleteLocalRecord, saveLocalRecord } from "@/lib/local-store";
 
 function delegateFor(resource: ResourceKey) {
   return prisma[resources[resource].delegate as keyof typeof prisma] as unknown as {
@@ -37,9 +38,12 @@ export async function saveResource(resource: ResourceKey, id: string | undefined
       await delegate.create({ data });
     }
   } catch {
+    await saveLocalRecord(resource, id, data);
+    revalidatePath(`/admin/${resource}`);
+    revalidatePath("/");
     return {
-      ok: false,
-      message: "DATABASE_URL haqiqiy PostgreSQLga ulanmagan. DB ulangandan keyin saqlash ishlaydi.",
+      ok: true,
+      message: "Local demo storagega saqlandi. PostgreSQL ulanganda Prisma orqali saqlanadi.",
     };
   }
 
@@ -52,6 +56,9 @@ export async function deleteResource(resource: ResourceKey, id: string) {
   try {
     await delegateFor(resource).delete({ where: { id } });
   } catch {
+    await deleteLocalRecord(resource, id);
+    revalidatePath(`/admin/${resource}`);
+    revalidatePath("/");
     return;
   }
   revalidatePath(`/admin/${resource}`);
