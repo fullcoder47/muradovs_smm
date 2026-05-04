@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { CheckCircle2, ImageIcon, Loader2, Upload } from "lucide-react";
 import { motion } from "framer-motion";
+import { upload as uploadBlob } from "@vercel/blob/client";
 import { saveResource } from "@/app/admin/actions";
 import { type ClientResourceConfig, type ResourceKey } from "@/lib/admin-config";
 
@@ -15,6 +16,30 @@ function normalizeValue(value: unknown) {
   if (value instanceof Date) return value.toISOString();
   if (value === null || value === undefined) return "";
   return value as string | number | boolean;
+}
+
+function imageTypeFromName(file: File) {
+  if (file.type) return file;
+
+  const ext = file.name.toLowerCase().split(".").pop();
+  const map: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    gif: "image/gif",
+    svg: "image/svg+xml",
+    avif: "image/avif",
+    heic: "image/heic",
+    heif: "image/heif",
+    bmp: "image/bmp",
+    tif: "image/tiff",
+    tiff: "image/tiff",
+    ico: "image/x-icon",
+  };
+
+  const type = ext ? map[ext] : undefined;
+  return type ? new File([file], file.name, { type }) : file;
 }
 
 export function ResourceForm({
@@ -52,16 +77,29 @@ export function ResourceForm({
     if (!file) return;
     setUploadError("");
     setUploadingField(fieldName);
-    const form = new FormData();
-    form.append("file", file);
     try {
-      const response = await fetch("/api/upload", { method: "POST", body: form });
-      const data = await response.json();
-      if (!response.ok || !data.url) {
-        throw new Error(data.error ?? "Upload amalga oshmadi");
+      const normalizedFile = imageTypeFromName(file);
+      let url = "";
+
+      try {
+        const blob = await uploadBlob(`muradovs-smm/${normalizedFile.name}`, normalizedFile, {
+          access: "public",
+          handleUploadUrl: "/api/upload/blob",
+        });
+        url = blob.url;
+      } catch {
+        const form = new FormData();
+        form.append("file", normalizedFile);
+        const response = await fetch("/api/upload", { method: "POST", body: form });
+        const data = await response.json();
+        if (!response.ok || !data.url) {
+          throw new Error(data.error ?? "Upload amalga oshmadi");
+        }
+        url = data.url;
       }
-      setValue(fieldName, data.url, { shouldDirty: true, shouldValidate: true });
-      setImagePreviews((current) => ({ ...current, [fieldName]: data.url }));
+
+      setValue(fieldName, url, { shouldDirty: true, shouldValidate: true });
+      setImagePreviews((current) => ({ ...current, [fieldName]: url }));
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "Upload amalga oshmadi");
     } finally {
@@ -135,7 +173,7 @@ export function ResourceForm({
                   {uploadingField === field.name ? "Yuklanmoqda" : "Yuklash"}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.svg,.avif,.heic,.heif,.bmp,.tif,.tiff,.ico"
                     className="hidden"
                     disabled={uploadingField === field.name}
                     onChange={(event) => upload(field.name, event.target.files?.[0])}
