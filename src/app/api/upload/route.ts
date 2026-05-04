@@ -84,8 +84,19 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ url: blob.url });
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Vercel Blob upload xatosi";
+      if (message.toLowerCase().includes("private store")) {
+        return NextResponse.json(
+          {
+            error:
+              "Vercel Blob store private access qilib yaratilgan. Saytda rasm ko'rinishi uchun public Blob store yarating yoki store access ni public qiling.",
+          },
+          { status: 500 },
+        );
+      }
+
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Vercel Blob upload xatosi" },
+        { error: message },
         { status: 500 },
       );
     }
