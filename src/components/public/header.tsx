@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { LanguageSwitcher } from "@/components/public/language-switcher";
+import { MobileMenu } from "@/components/public/mobile-menu";
 import { t } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n-server";
 
@@ -40,9 +41,7 @@ export async function Header() {
         <div className="sm:hidden">
           <LanguageSwitcher current={locale} />
         </div>
-        <button className="rounded-full border border-white/15 p-2 text-slate-200 lg:hidden" aria-label="Menu">
-          <Menu size={20} />
-        </button>
+        <MobileMenu nav={nav as [string, string][]} consultationLabel={t(locale, "consultation")} />
       </div>
     </header>
   );
