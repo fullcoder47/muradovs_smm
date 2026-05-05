@@ -60,6 +60,8 @@ export function PortfolioCard({ title, summary, slug, results, imageUrl }: { tit
 }
 
 export function PricingCard({ name, price, description, features, isPopular }: { name: string; price: string; description: string; features: string[]; isPopular: boolean }) {
+  const contactHref = `/contact?package=${encodeURIComponent(name)}&price=${encodeURIComponent(price)}`;
+
   return (
     <MotionCard>
       <article className={`relative rounded-lg border p-6 ${isPopular ? "border-blue-400 bg-blue-500/10 blue-glow" : "border-white/10 bg-white/[0.04]"}`}>
@@ -74,7 +76,7 @@ export function PricingCard({ name, price, description, features, isPopular }: {
             </li>
           ))}
         </ul>
-        <Link href="/contact" className="mt-7 flex w-full items-center justify-center rounded-full bg-white px-4 py-3 font-bold text-black transition hover:bg-amber-200">
+        <Link href={contactHref} className="mt-7 flex w-full items-center justify-center rounded-full bg-white px-4 py-3 font-bold text-black transition hover:bg-amber-200">
           Boshlash
         </Link>
       </article>

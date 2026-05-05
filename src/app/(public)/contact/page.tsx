@@ -10,8 +10,17 @@ export const metadata: Metadata = {
   description: "Muradovs_.smm bilan bog'lanish va SMM konsultatsiya olish.",
 };
 
-export default async function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ package?: string; price?: string }>;
+}) {
   const [locale, settings] = await Promise.all([getLocale(), getSettings()]);
+  const params = await searchParams;
+  const selectedPackage = params?.package?.trim() ?? "";
+  const selectedPrice = params?.price?.trim() ?? "";
+  const selectedService = selectedPackage ? `Paket: ${selectedPackage}${selectedPrice ? ` (${selectedPrice})` : ""}` : "";
+  const initialMessage = selectedService ? `Tanlangan paket: ${selectedService}` : "";
   const siteName = settings.site_name ?? "Muradovs_.smm";
   const phone = settings.phone ?? "+998 90 000 00 00";
   const telegram = settings.telegram ?? "https://t.me/muradovs_smm";
@@ -26,7 +35,7 @@ export default async function ContactPage() {
           <p className="mt-2 text-slate-400">Instagram: {instagram}</p>
           <p className="mt-2 text-slate-400">Telefon: {phone}</p>
         </div>
-        <LeadForm />
+        <LeadForm initialServiceType={selectedService} initialMessage={initialMessage} />
       </div>
     </Section>
   );

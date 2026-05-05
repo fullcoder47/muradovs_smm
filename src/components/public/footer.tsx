@@ -1,8 +1,29 @@
 import Link from "next/link";
-import { Camera, Send, Phone } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n-server";
 import { getSettings } from "@/lib/public-data";
+
+function InstagramIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function TelegramIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M21.6 4.3 18.3 20c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.3L5.7 13.4.8 11.9c-1.1-.3-1.1-1.1.2-1.6L20.2 2.9c.9-.3 1.7.2 1.4 1.4Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 export async function Footer() {
   const [locale, settings] = await Promise.all([getLocale(), getSettings()]);
@@ -31,21 +52,21 @@ export async function Footer() {
         <div>
           <p className="font-semibold">{t(locale, "contact")}</p>
           <div className="mt-4 flex gap-3 text-slate-300">
-            <Link href={instagram} aria-label="Instagram">
-              <Camera size={20} />
+            <Link href={instagram} aria-label="Instagram" className="transition hover:text-pink-300">
+              <InstagramIcon size={20} />
             </Link>
-            <Link href={telegram} aria-label="Telegram">
-              <Send size={20} />
+            <Link href={telegram} aria-label="Telegram" className="transition hover:text-sky-300">
+              <TelegramIcon size={20} />
             </Link>
-            <Link href={`tel:${phone.replace(/\s/g, "")}`} aria-label="Telefon">
-              <Phone size={20} />
+            <Link href={`tel:${phone.replace(/\s/g, "")}`} aria-label="Telefon" className="transition hover:text-emerald-300">
+              <PhoneCall size={20} />
             </Link>
           </div>
           <p className="mt-4 text-sm text-slate-500">{phone}</p>
         </div>
       </div>
       <div className="border-t border-white/10 px-4 py-5 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} {siteName}. {t(locale, "rights")}
+        {"\u00A9"} {new Date().getFullYear()} {siteName}. {t(locale, "rights")}
       </div>
     </footer>
   );

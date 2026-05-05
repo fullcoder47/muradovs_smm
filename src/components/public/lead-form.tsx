@@ -16,8 +16,21 @@ function SubmitButton() {
   );
 }
 
-export function LeadForm() {
+export function LeadForm({
+  initialServiceType = "",
+  initialMessage = "",
+}: {
+  initialServiceType?: string;
+  initialMessage?: string;
+}) {
   const [state, action] = useActionState(createLead, { ok: false, message: "" });
+  const serviceOptions = [
+    "SMM strategiya",
+    "Kontent production",
+    "Target reklama",
+    "To'liq boshqaruv",
+  ];
+  const hasCustomService = initialServiceType && !serviceOptions.includes(initialServiceType);
 
   return (
     <form action={action} className="rounded-lg border border-white/10 bg-white/[0.04] p-5 sm:p-7">
@@ -30,26 +43,34 @@ export function LeadForm() {
           Telefon
           <input name="phone" required className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400" />
         </label>
-        <label className="grid gap-2 text-sm">
-          Telegram
-          <input name="telegram" className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400" />
-        </label>
-        <label className="grid gap-2 text-sm">
+        <label className="grid gap-2 text-sm sm:col-span-2">
           Biznes turi
           <input name="businessType" required className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400" />
         </label>
         <label className="grid gap-2 text-sm sm:col-span-2">
           Xizmat turi
-          <select name="serviceType" required className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400">
-            <option value="SMM strategiya">SMM strategiya</option>
-            <option value="Kontent production">Kontent production</option>
-            <option value="Target reklama">Target reklama</option>
-            <option value="To'liq boshqaruv">To'liq boshqaruv</option>
+          <select
+            name="serviceType"
+            required
+            defaultValue={initialServiceType || serviceOptions[0]}
+            className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400"
+          >
+            {hasCustomService && <option value={initialServiceType}>{initialServiceType}</option>}
+            {serviceOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
           </select>
         </label>
         <label className="grid gap-2 text-sm sm:col-span-2">
           Xabar
-          <textarea name="message" rows={5} className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400" />
+          <textarea
+            name="message"
+            rows={5}
+            defaultValue={initialMessage}
+            className="rounded-md border border-white/10 bg-black px-4 py-3 outline-none focus:border-blue-400"
+          />
         </label>
       </div>
       <div className="mt-5">

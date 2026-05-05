@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { slugify } from "@/lib/utils";
 
+const checkboxSchema = z.preprocess((value) => {
+  if (value === "true" || value === "on" || value === true) return true;
+  if (value === "false" || value === false || value === undefined || value === null || value === "") return false;
+  return value;
+}, z.boolean().default(false));
+
 export const leadSchema = z.object({
   name: z.string().min(2, "Ism kamida 2 ta belgidan iborat bo'lishi kerak"),
   phone: z.string().min(7, "Telefon raqamni to'g'ri kiriting"),
@@ -22,7 +28,7 @@ export const serviceSchema = z.object({
   icon: z.string().optional(),
   imageUrl: z.string().optional(),
   features: z.string().optional(),
-  isActive: z.coerce.boolean().default(false),
+  isActive: checkboxSchema,
   order: z.coerce.number().default(0),
 });
 
@@ -36,8 +42,8 @@ export const portfolioSchema = z.object({
   solution: z.string().optional(),
   results: z.string().optional(),
   imageUrl: z.string().optional(),
-  isFeatured: z.coerce.boolean().default(false),
-  isActive: z.coerce.boolean().default(false),
+  isFeatured: checkboxSchema,
+  isActive: checkboxSchema,
 });
 
 export const pricingSchema = z.object({
@@ -46,8 +52,8 @@ export const pricingSchema = z.object({
   price: z.string().min(1),
   description: z.string().min(8),
   features: z.string().optional(),
-  isPopular: z.coerce.boolean().default(false),
-  isActive: z.coerce.boolean().default(false),
+  isPopular: checkboxSchema,
+  isActive: checkboxSchema,
   order: z.coerce.number().default(0),
 });
 
@@ -58,7 +64,7 @@ export const blogSchema = z.object({
   content: z.string().min(20),
   imageUrl: z.string().optional(),
   tags: z.string().optional(),
-  isPublished: z.coerce.boolean().default(false),
+  isPublished: checkboxSchema,
 });
 
 export const testimonialSchema = z.object({
@@ -68,13 +74,13 @@ export const testimonialSchema = z.object({
   content: z.string().min(10),
   rating: z.coerce.number().min(1).max(5).default(5),
   imageUrl: z.string().optional(),
-  isActive: z.coerce.boolean().default(false),
+  isActive: checkboxSchema,
 });
 
 export const faqSchema = z.object({
   question: z.string().min(5),
   answer: z.string().min(5),
-  isActive: z.coerce.boolean().default(false),
+  isActive: checkboxSchema,
   order: z.coerce.number().default(0),
 });
 

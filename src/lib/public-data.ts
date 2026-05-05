@@ -25,13 +25,7 @@ export async function getHomeData() {
       prisma.fAQ.findMany({ where: { isActive: true }, orderBy: { order: "asc" }, take: 8 }),
     ]);
 
-    return {
-      services: withFallback(services, demoServices),
-      portfolio: withFallback(portfolio, demoPortfolio),
-      pricing: withFallback(pricing, demoPricing),
-      testimonials: withFallback(testimonials, demoTestimonials),
-      faqs: withFallback(faqs, demoFaqs),
-    };
+    return { services, portfolio, pricing, testimonials, faqs };
   } catch {
     const [services, portfolio, pricing, testimonials, faqs] = await Promise.all([
       listLocalRecords<(typeof demoServices)[number]>("services"),
@@ -114,7 +108,7 @@ export async function localizeFaq<T extends { question: string; answer: string }
 
 export async function getServices() {
   try {
-    return withFallback(await prisma.service.findMany({ where: { isActive: true }, orderBy: { order: "asc" } }), demoServices);
+    return await prisma.service.findMany({ where: { isActive: true }, orderBy: { order: "asc" } });
   } catch {
     return withFallback(await listLocalRecords<(typeof demoServices)[number]>("services"), demoServices);
   }
@@ -122,7 +116,7 @@ export async function getServices() {
 
 export async function getPortfolioItems() {
   try {
-    return withFallback(await prisma.portfolio.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } }), demoPortfolio);
+    return await prisma.portfolio.findMany({ where: { isActive: true }, orderBy: { createdAt: "desc" } });
   } catch {
     return withFallback(await listLocalRecords<(typeof demoPortfolio)[number]>("portfolio"), demoPortfolio);
   }
@@ -130,7 +124,7 @@ export async function getPortfolioItems() {
 
 export async function getPortfolioBySlug(slug: string) {
   try {
-    return (await prisma.portfolio.findUnique({ where: { slug } })) ?? demoPortfolio.find((item) => item.slug === slug) ?? null;
+    return await prisma.portfolio.findFirst({ where: { slug, isActive: true } });
   } catch {
     return (await listLocalRecords<(typeof demoPortfolio)[number]>("portfolio")).find((item) => item.slug === slug) ?? demoPortfolio.find((item) => item.slug === slug) ?? null;
   }
@@ -138,7 +132,7 @@ export async function getPortfolioBySlug(slug: string) {
 
 export async function getPricingPackages() {
   try {
-    return withFallback(await prisma.pricingPackage.findMany({ where: { isActive: true }, orderBy: { order: "asc" } }), demoPricing);
+    return await prisma.pricingPackage.findMany({ where: { isActive: true }, orderBy: { order: "asc" } });
   } catch {
     return withFallback(await listLocalRecords<(typeof demoPricing)[number]>("pricing"), demoPricing);
   }
@@ -146,7 +140,7 @@ export async function getPricingPackages() {
 
 export async function getBlogPosts() {
   try {
-    return withFallback(await prisma.blogPost.findMany({ where: { isPublished: true }, orderBy: { publishedAt: "desc" } }), demoPosts);
+    return await prisma.blogPost.findMany({ where: { isPublished: true }, orderBy: { publishedAt: "desc" } });
   } catch {
     return withFallback(await listLocalRecords<(typeof demoPosts)[number]>("blog"), demoPosts);
   }
@@ -154,7 +148,7 @@ export async function getBlogPosts() {
 
 export async function getBlogPostBySlug(slug: string) {
   try {
-    return (await prisma.blogPost.findUnique({ where: { slug } })) ?? demoPosts.find((post) => post.slug === slug) ?? null;
+    return await prisma.blogPost.findFirst({ where: { slug, isPublished: true } });
   } catch {
     return (await listLocalRecords<(typeof demoPosts)[number]>("blog")).find((post) => post.slug === slug) ?? demoPosts.find((post) => post.slug === slug) ?? null;
   }
