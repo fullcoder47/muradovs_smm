@@ -87,6 +87,7 @@ export function ResourceForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState("");
+  const [messageOk, setMessageOk] = useState(true);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState("");
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>(() =>
@@ -138,6 +139,7 @@ export function ResourceForm({
     startTransition(async () => {
       const result = await saveResource(resource, item?.id as string | undefined, formData);
       setMessage(result.message);
+      setMessageOk(result.ok);
       if (result.ok) {
         router.push(`/admin/${resource}`);
         router.refresh();
@@ -234,7 +236,7 @@ export function ResourceForm({
         {pending ? "Saqlanmoqda..." : "Saqlash"}
       </motion.button>
       {message && (
-        <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 text-sm text-emerald-300">
+        <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex items-center gap-2 text-sm ${messageOk ? "text-emerald-300" : "text-red-300"}`}>
           <CheckCircle2 size={16} /> {message}
         </motion.p>
       )}

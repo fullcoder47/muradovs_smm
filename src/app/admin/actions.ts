@@ -13,6 +13,39 @@ function delegateFor(resource: ResourceKey) {
   };
 }
 
+async function findBySlug(resource: ResourceKey, slug: string) {
+  if (resource === "services") return prisma.service.findUnique({ where: { slug }, select: { id: true } });
+  if (resource === "portfolio") return prisma.portfolio.findUnique({ where: { slug }, select: { id: true } });
+  if (resource === "pricing") return prisma.pricingPackage.findUnique({ where: { slug }, select: { id: true } });
+  if (resource === "blog") return prisma.blogPost.findUnique({ where: { slug }, select: { id: true } });
+  return null;
+}
+
+async function makeUniqueSlug(resource: ResourceKey, slug: string, currentId?: string) {
+  if (!["services", "portfolio", "pricing", "blog"].includes(resource)) return slug;
+
+  let candidate = slug;
+  let counter = 2;
+
+  while (true) {
+    const existing = await findBySlug(resource, candidate);
+    if (!existing || existing.id === currentId) return candidate;
+    candidate = `${slug}-${counter}`;
+    counter += 1;
+  }
+}
+
+function revalidatePublic() {
+  revalidatePath("/");
+  revalidatePath("/services");
+  revalidatePath("/portfolio");
+  revalidatePath("/pricing");
+  revalidatePath("/blog");
+  revalidatePath("/about");
+  revalidatePath("/contact");
+  revalidatePath("/sitemap.xml");
+}
+
 export async function saveResource(resource: ResourceKey, id: string | undefined, formData: FormData) {
   const config = resources[resource];
   const raw = Object.fromEntries(formData);
@@ -28,31 +61,54 @@ export async function saveResource(resource: ResourceKey, id: string | undefined
     return { ok: false, message: "Forma ma'lumotlarini tekshiring." };
   }
 
-  const data = config.transform(parsed.data as Record<string, unknown>);
+  const data = config.transform(parsed.data as Record<string, unknown>) as Record<string, unknown>;
   const delegate = delegateFor(resource);
 
   try {
+    if (typeof data.slug === "string") {
+      data.slug = await makeUniqueSlug(resource, data.slug, id);
+    }
+
+    if (resource === "settings" && !id && typeof data.key === "string") {
+      await prisma.siteSetting.upsert({
+        where: { key: data.key },
+        update: {
+          value: String(data.value ?? ""),
+          group: String(data.group ?? "general"),
+        },
+        create: {
+          key: data.key,
+          value: String(data.value ?? ""),
+          group: String(data.group ?? "general"),
+        },
+      });
+      revalidatePath(`/admin/${resource}`);
+      revalidatePublic();
+      return { ok: true, message: "Sozlama saqlandi." };
+    }
+
     if (id) {
       await delegate.update({ where: { id }, data });
     } else {
       await delegate.create({ data });
     }
-  } catch {
+  } catch (error) {
     if (localStoreEnabled()) {
       await saveLocalRecord(resource, id, data);
       revalidatePath(`/admin/${resource}`);
-      revalidatePath("/");
+      revalidatePublic();
       return {
         ok: true,
         message: "Local demo storagega saqlandi. PostgreSQL ulanganda Prisma orqali saqlanadi.",
       };
     }
 
-    return { ok: false, message: "Databasega ulanishda xatolik. DATABASE_URL va migrationlarni tekshiring." };
+    const message = error instanceof Error ? error.message : "Noma'lum database xatosi";
+    return { ok: false, message: `Saqlanmadi: ${message}` };
   }
 
   revalidatePath(`/admin/${resource}`);
-  revalidatePath("/");
+  revalidatePublic();
   return { ok: true, message: "Saqlandi." };
 }
 
@@ -63,12 +119,12 @@ export async function deleteResource(resource: ResourceKey, id: string) {
     if (localStoreEnabled()) {
       await deleteLocalRecord(resource, id);
       revalidatePath(`/admin/${resource}`);
-      revalidatePath("/");
+      revalidatePublic();
     }
     return;
   }
   revalidatePath(`/admin/${resource}`);
-  revalidatePath("/");
+  revalidatePublic();
 }
 
 export async function updateLeadStatus(id: string, status: "NEW" | "CONTACTED" | "IN_PROGRESS" | "CLOSED") {

@@ -24,7 +24,14 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   return (
     <Section eyebrow={item.category} title={item.title} description={item.summary}>
       <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="aspect-[16/10] rounded-lg bg-[linear-gradient(135deg,#2563eb,#020617_55%,#f59e0b)]" />
+        <div className="overflow-hidden rounded-lg bg-[linear-gradient(135deg,#2563eb,#020617_55%,#f59e0b)]">
+          {item.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.imageUrl} alt={item.title} className="aspect-[16/10] w-full object-cover" />
+          ) : (
+            <div className="aspect-[16/10]" />
+          )}
+        </div>
         <div className="rounded-lg border border-white/10 bg-white/[0.04] p-6">
           <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Mijoz</p>
           <p className="mt-2 text-2xl font-black">{item.client}</p>
