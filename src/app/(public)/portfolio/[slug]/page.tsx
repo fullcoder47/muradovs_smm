@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ExternalLink } from "lucide-react";
 import { Section } from "@/components/public/section";
 import { getLocale } from "@/lib/i18n-server";
 import { getPortfolioBySlug, localizePortfolio } from "@/lib/public-data";
@@ -35,6 +36,16 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         <div className="rounded-lg border border-white/10 bg-white/[0.04] p-6">
           <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Mijoz</p>
           <p className="mt-2 text-2xl font-black">{item.client}</p>
+          {item.instagramUrl && (
+            <Link
+              href={item.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-pink-300/30 px-4 py-2 text-sm font-bold text-pink-200 transition hover:border-pink-200 hover:bg-pink-300/10"
+            >
+              Instagram sahifaga o'tish <ExternalLink size={15} />
+            </Link>
+          )}
           {item.challenge && <p className="mt-6 leading-7 text-slate-400"><span className="font-bold text-white">Vazifa:</span> {item.challenge}</p>}
           {item.solution && <p className="mt-4 leading-7 text-slate-400"><span className="font-bold text-white">Yechim:</span> {item.solution}</p>}
           <div className="mt-6 space-y-3">

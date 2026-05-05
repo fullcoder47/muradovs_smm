@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Check, Star } from "lucide-react";
+import { ArrowUpRight, Check, ExternalLink, Star } from "lucide-react";
 import { MotionCard } from "@/components/motion/reveal";
 
-export function ServiceCard({ title, description, features, imageUrl }: { title: string; description: string; features: string[]; imageUrl?: string | null }) {
+export function ServiceCard({
+  title,
+  description,
+  features,
+  imageUrl,
+}: {
+  title: string;
+  description: string;
+  features: string[];
+  imageUrl?: string | null;
+}) {
   return (
     <MotionCard>
       <article className="animated-border group relative rounded-lg border border-white/10 bg-white/[0.04] p-6 transition hover:border-blue-400/50 hover:bg-white/[0.07]">
@@ -30,23 +40,39 @@ export function ServiceCard({ title, description, features, imageUrl }: { title:
   );
 }
 
-export function PortfolioCard({ title, summary, slug, results, imageUrl }: { title: string; summary: string; slug: string; results: string[]; imageUrl?: string | null }) {
+export function PortfolioCard({
+  title,
+  summary,
+  slug,
+  results,
+  imageUrl,
+  instagramUrl,
+}: {
+  title: string;
+  summary: string;
+  slug: string;
+  results: string[];
+  imageUrl?: string | null;
+  instagramUrl?: string | null;
+}) {
   return (
     <MotionCard>
-      <Link href={`/portfolio/${slug}`} className="animated-border group relative block rounded-lg border border-white/10 bg-slate-950 p-6 transition hover:border-amber-300/50">
-        <div className="mb-6 overflow-hidden rounded-md bg-[linear-gradient(135deg,#1d4ed8,#0f172a_55%,#f59e0b)]">
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={title} className="aspect-[16/10] w-full object-cover opacity-90 transition duration-700 group-hover:scale-105" />
-          ) : (
-            <div className="aspect-[16/10] shimmer opacity-90" />
-          )}
-        </div>
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="text-xl font-bold">{title}</h3>
-          <ArrowUpRight className="shrink-0 text-slate-400 transition group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-amber-300" size={20} />
-        </div>
-        <p className="mt-3 text-sm leading-6 text-slate-400">{summary}</p>
+      <article className="animated-border group relative rounded-lg border border-white/10 bg-slate-950 p-6 transition hover:border-amber-300/50">
+        <Link href={`/portfolio/${slug}`} className="block">
+          <div className="mb-6 overflow-hidden rounded-md bg-[linear-gradient(135deg,#1d4ed8,#0f172a_55%,#f59e0b)]">
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt={title} className="aspect-[16/10] w-full object-cover opacity-90 transition duration-700 group-hover:scale-105" />
+            ) : (
+              <div className="aspect-[16/10] shimmer opacity-90" />
+            )}
+          </div>
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="text-xl font-bold">{title}</h3>
+            <ArrowUpRight className="shrink-0 text-slate-400 transition group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-amber-300" size={20} />
+          </div>
+          <p className="mt-3 text-sm leading-6 text-slate-400">{summary}</p>
+        </Link>
         <div className="mt-5 flex flex-wrap gap-2">
           {results.slice(0, 3).map((result) => (
             <span key={result} className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">
@@ -54,12 +80,34 @@ export function PortfolioCard({ title, summary, slug, results, imageUrl }: { tit
             </span>
           ))}
         </div>
-      </Link>
+        {instagramUrl && (
+          <Link
+            href={instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-full border border-pink-300/30 px-4 py-2 text-sm font-bold text-pink-200 transition hover:border-pink-200 hover:bg-pink-300/10"
+          >
+            Instagram sahifa <ExternalLink size={15} />
+          </Link>
+        )}
+      </article>
     </MotionCard>
   );
 }
 
-export function PricingCard({ name, price, description, features, isPopular }: { name: string; price: string; description: string; features: string[]; isPopular: boolean }) {
+export function PricingCard({
+  name,
+  price,
+  description,
+  features,
+  isPopular,
+}: {
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  isPopular: boolean;
+}) {
   const contactHref = `/contact?package=${encodeURIComponent(name)}&price=${encodeURIComponent(price)}`;
 
   return (

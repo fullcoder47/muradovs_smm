@@ -42,6 +42,7 @@ export const portfolioSchema = z.object({
   solution: z.string().optional(),
   results: z.string().optional(),
   imageUrl: z.string().optional(),
+  instagramUrl: z.string().optional(),
   isFeatured: checkboxSchema,
   isActive: checkboxSchema,
 });

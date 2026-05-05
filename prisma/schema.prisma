@@ -60,6 +60,7 @@ model Portfolio {
   solution    String?
   results     String[]
   imageUrl    String?
+  instagramUrl String?
   isFeatured  Boolean  @default(false)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

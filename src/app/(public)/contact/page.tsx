@@ -19,8 +19,10 @@ export default async function ContactPage({
   const params = await searchParams;
   const selectedPackage = params?.package?.trim() ?? "";
   const selectedPrice = params?.price?.trim() ?? "";
-  const selectedService = selectedPackage ? `Paket: ${selectedPackage}${selectedPrice ? ` (${selectedPrice})` : ""}` : "";
-  const initialMessage = selectedService ? `Tanlangan paket: ${selectedService}` : "";
+  const selectedService = selectedPackage ? `Paket: ${selectedPackage}` : "";
+  const initialMessage = selectedPackage
+    ? `Tanlangan paket: ${selectedPackage}${selectedPrice ? `\nNarxi: ${selectedPrice}` : ""}`
+    : "";
   const siteName = settings.site_name ?? "Muradovs_.smm";
   const phone = settings.phone ?? "+998 90 000 00 00";
   const telegram = settings.telegram ?? "https://t.me/muradovs_smm";
