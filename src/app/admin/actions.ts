@@ -39,11 +39,51 @@ function revalidatePublic() {
   revalidatePath("/");
   revalidatePath("/services");
   revalidatePath("/portfolio");
+  revalidatePath("/portfolio/[slug]", "page");
   revalidatePath("/pricing");
   revalidatePath("/blog");
+  revalidatePath("/blog/[slug]", "page");
   revalidatePath("/about");
   revalidatePath("/contact");
   revalidatePath("/sitemap.xml");
+}
+
+function isUniqueConstraintError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "P2002"
+  );
+}
+
+async function createWithSlugRetry(
+  resource: ResourceKey,
+  delegate: ReturnType<typeof delegateFor>,
+  data: Record<string, unknown>,
+) {
+  if (typeof data.slug !== "string") {
+    return delegate.create({ data });
+  }
+
+  const baseSlug = data.slug;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      data.slug =
+        attempt === 0
+          ? await makeUniqueSlug(resource, baseSlug)
+          : await makeUniqueSlug(resource, `${baseSlug}-${attempt + 1}`);
+      return await delegate.create({ data });
+    } catch (error) {
+      lastError = error;
+      if (!isUniqueConstraintError(error)) throw error;
+      data.slug = `${baseSlug}-${Date.now().toString(36)}-${attempt + 2}`;
+    }
+  }
+
+  throw lastError;
 }
 
 export async function saveResource(resource: ResourceKey, id: string | undefined, formData: FormData) {
@@ -90,9 +130,16 @@ export async function saveResource(resource: ResourceKey, id: string | undefined
     if (id) {
       await delegate.update({ where: { id }, data });
     } else {
-      await delegate.create({ data });
+      await createWithSlugRetry(resource, delegate, data);
     }
   } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return {
+        ok: false,
+        message: "Bu slug allaqachon band. Slug maydonini bo'sh qoldiring yoki boshqa nom yozing.",
+      };
+    }
+
     if (localStoreEnabled()) {
       await saveLocalRecord(resource, id, data);
       revalidatePath(`/admin/${resource}`);
